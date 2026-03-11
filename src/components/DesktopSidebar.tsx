@@ -1,4 +1,4 @@
-import { Home, Search, CalendarDays, User, Plus } from "lucide-react";
+import { Home, Search, CalendarDays, User, Plus, Shield } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
