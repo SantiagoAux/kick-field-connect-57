@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Zap, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -11,11 +11,11 @@ interface PlayerCardProps {
   available?: boolean;
 }
 
-const positionColors: Record<string, string> = {
-  Portero: "bg-amber-100 text-amber-700",
-  Defensa: "bg-blue-100 text-blue-700",
-  Mediocampista: "bg-emerald-100 text-emerald-700",
-  Delantero: "bg-red-100 text-red-700",
+const positionStyles: Record<string, string> = {
+  Portero: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  Defensa: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  Mediocampista: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  Delantero: "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
 const PlayerCard = ({ name, position, level, rating, city, available }: PlayerCardProps) => {
@@ -29,35 +29,41 @@ const PlayerCard = ({ name, position, level, rating, city, available }: PlayerCa
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl bg-card card-shadow transition-card hover:card-shadow-hover p-4 flex items-center gap-3"
+      className="rounded-xl bg-card card-shadow transition-card hover:card-shadow-hover p-4 flex items-center gap-4"
     >
       <div className="relative">
-        <Avatar className="h-12 w-12">
-          <AvatarFallback className="bg-secondary text-secondary-foreground font-medium text-sm">
+        <Avatar className="h-14 w-14 rounded-xl border-2 border-primary/30">
+          <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary font-black text-lg">
             {initials}
           </AvatarFallback>
         </Avatar>
         {available && (
-          <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary border-2 border-card" />
+          <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-primary border-2 border-card shadow-lg shadow-primary/30" />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm truncate">{name}</p>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className={`text-label px-2 py-0.5 rounded-full ${positionColors[position] || "bg-secondary text-secondary-foreground"}`}>
+        <p className="font-black text-sm truncate uppercase tracking-wide">{name}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${positionStyles[position] || "bg-secondary text-secondary-foreground border-border"}`}>
             {position}
           </span>
-          <span className="text-xs text-muted-foreground">{city}</span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {city}
+          </span>
         </div>
       </div>
 
       <div className="flex flex-col items-end gap-1">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded">
           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-medium tabular-nums">{rating.toFixed(1)}</span>
+          <span className="text-sm font-black tabular-nums text-amber-400">{rating.toFixed(1)}</span>
         </div>
-        <span className="text-xs text-muted-foreground">Nivel {level}</span>
+        <div className="flex items-center gap-1">
+          <Zap className="h-3 w-3 text-primary" />
+          <span className="text-xs font-bold text-muted-foreground">NIVEL {level}</span>
+        </div>
       </div>
     </motion.div>
   );
