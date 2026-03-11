@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,79 +6,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-
-    --primary: 142 90% 40%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 240 5.9% 90%;
-    --input: 240 4.8% 95.9%;
-    --ring: 142 90% 45%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 142 90% 45%;
-
-    /* Custom tokens */
-    --card-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 1px 3px 0 rgba(0,0,0,.03);
-    --card-shadow-hover: 0 0 0 1px rgba(0,0,0,.05), 0 4px 6px -1px rgba(0,0,0,.05), 0 2px 4px -2px rgba(0,0,0,.05);
-    --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
+    --background: 0 0% 3%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
+
+    --card: 0 0% 6%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6%;
+
+    --popover: 0 0% 6%;
     --popover-foreground: 0 0% 98%;
-    --primary: 142 90% 45%;
+
+    --primary: 142 76% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
+
+    --secondary: 142 20% 15%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    --muted: 142 10% 12%;
+    --muted-foreground: 142 10% 60%;
+
+    --accent: 142 76% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 90% 50%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 90% 45%;
+
+    --border: 142 15% 18%;
+    --input: 142 15% 15%;
+    --ring: 142 76% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 142 76% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 90% 50%;
+    --sidebar-accent: 142 15% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 142 15% 15%;
+    --sidebar-ring: 142 76% 50%;
+
+    /* Custom tokens - Football style */
+    --card-shadow: 0 4px 0 0 hsl(142 76% 30% / 0.3), 0 1px 3px 0 rgba(0,0,0,0.4);
+    --card-shadow-hover: 0 6px 0 0 hsl(142 76% 35% / 0.4), 0 8px 20px -2px rgba(0,0,0,0.5);
+    --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+    --pitch-pattern: repeating-linear-gradient(90deg, hsl(142 60% 25% / 0.1) 0px, hsl(142 60% 25% / 0.1) 1px, transparent 1px, transparent 20px);
   }
 }
 
@@ -89,9 +60,13 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    background-image: 
+      radial-gradient(ellipse at 20% 0%, hsl(142 76% 20% / 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, hsl(142 60% 25% / 0.1) 0%, transparent 40%);
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    font-family: 'Oswald', sans-serif;
+    @apply font-bold tracking-wide uppercase;
     text-wrap: balance;
   }
 }
@@ -104,9 +79,16 @@
     box-shadow: var(--card-shadow-hover);
   }
   .transition-card {
-    transition: box-shadow 200ms var(--ease-out);
+    transition: all 200ms var(--ease-out);
   }
   .text-label {
-    @apply text-xs font-medium uppercase tracking-widest;
+    @apply text-xs font-bold uppercase tracking-widest;
+  }
+  .heading-display {
+    font-family: 'Oswald', sans-serif;
+    @apply font-bold tracking-wide uppercase;
+  }
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60;
   }
 }

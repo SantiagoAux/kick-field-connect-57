@@ -19,7 +19,7 @@ const DesktopSidebar = () => {
           <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">⚽</span>
           </div>
-          <span className="font-semibold text-lg tracking-tight">FútbolYa</span>
+          <span className="font-black text-lg tracking-tight italic">BarrioFútbol</span>
         </div>
 
         <Button className="mb-6 gap-2" size="default">
