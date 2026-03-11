@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Trophy, Zap, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/SectionHeader";
 import MatchCard from "@/components/MatchCard";
@@ -33,22 +33,65 @@ const teams = [
 
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.08 } },
 };
 
 const Dashboard = () => {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Hola, Jugador 👋</h1>
-          <p className="text-sm text-muted-foreground mt-1">Menos organización. Más fútbol.</p>
+    <div className="space-y-10">
+      {/* Hero Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/20 p-6"
+      >
+        <div className="absolute top-0 right-0 p-4 opacity-20">
+          <Trophy className="h-24 w-24 text-primary" />
         </div>
-        <Button className="gap-2 md:hidden" size="sm">
-          <Plus className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only">Crear</span>
-        </Button>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <Flame className="h-5 w-5 text-primary" />
+            <span className="text-label text-primary">Vamos a jugar</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black italic tracking-tight">
+            LA CANCHA<span className="text-primary"> ES NUESTRA</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-md">
+            Conecta con jugadores de tu barrio, arma equipos y domina la cancha. 
+            Menos charla, más fútbol.
+          </p>
+          <div className="flex gap-3 mt-5">
+            <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wide">
+              <Plus className="h-4 w-4" />
+              Crear Partido
+            </Button>
+            <Button variant="outline" className="gap-2 border-primary/30 hover:bg-primary/10">
+              <Zap className="h-4 w-4" />
+              Buscar Cancha
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: "Partidos", value: "12", sub: "este mes" },
+          { label: "Jugadores", value: "156", sub: "activos" },
+          { label: "Canchas", value: "8", sub: "disponibles" },
+        ].map((stat, i) => (
+          <motion.div 
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+            className="text-center p-4 rounded-xl bg-card card-shadow"
+          >
+            <p className="text-2xl font-black text-primary">{stat.value}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{stat.label}</p>
+            <p className="text-[10px] text-muted-foreground/60">{stat.sub}</p>
+          </motion.div>
+        ))}
       </div>
 
       {/* Upcoming Matches */}
@@ -83,7 +126,7 @@ const Dashboard = () => {
 
       {/* Teams */}
       <section>
-        <SectionHeader title="Equipos" linkTo="/buscar" />
+        <SectionHeader title="Equipos del Barrio" linkTo="/buscar" />
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
           {teams.map((team, i) => (
             <TeamCard key={i} {...team} />

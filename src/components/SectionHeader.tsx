@@ -9,11 +9,11 @@ interface SectionHeaderProps {
 
 const SectionHeader = ({ title, linkTo, linkText = "Ver todo" }: SectionHeaderProps) => (
   <div className="flex items-center justify-between mb-4">
-    <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+    <h2 className="text-base font-black uppercase tracking-wide gradient-text">{title}</h2>
     {linkTo && (
       <Link
         to={linkTo}
-        className="flex items-center gap-0.5 text-sm text-primary font-medium hover:underline"
+        className="flex items-center gap-0.5 text-xs font-bold uppercase tracking-wide text-primary hover:text-primary/80 transition-colors"
       >
         {linkText}
         <ChevronRight className="h-4 w-4" />
