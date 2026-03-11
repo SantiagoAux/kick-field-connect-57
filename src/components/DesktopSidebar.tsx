@@ -15,11 +15,11 @@ const DesktopSidebar = () => {
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-40">
       <div className="flex flex-col h-full px-4 py-6">
-        <div className="flex items-center gap-2 px-2 mb-8">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">⚽</span>
+        <div className="flex items-center gap-3 px-2 mb-8">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Shield className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-black text-lg tracking-tight italic">BarrioFútbol</span>
+          <span className="font-black text-xl tracking-tight italic">BarrioFútbol</span>
         </div>
 
         <Button className="mb-6 gap-2" size="default">
