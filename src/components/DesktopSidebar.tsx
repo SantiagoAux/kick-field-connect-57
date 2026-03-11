@@ -13,34 +13,34 @@ const DesktopSidebar = () => {
   const location = useLocation();
 
   return (
-    <aside className="hidden md:flex md:w-60 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-40">
+    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-border bg-background z-40">
       <div className="flex flex-col h-full px-4 py-6">
         <div className="flex items-center gap-3 px-2 mb-8">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
-            <Shield className="h-5 w-5 text-primary-foreground" />
+          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20">
+            <Shield className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="font-black text-xl tracking-tight italic">BarrioFútbol</span>
+          <span className="font-black text-2xl tracking-tight italic">BarrioFútbol</span>
         </div>
 
-        <Button className="mb-6 gap-2 font-bold uppercase tracking-wide text-sm" size="default">
-          <Plus className="h-4 w-4" />
+        <Button className="mb-6 gap-2 font-bold uppercase tracking-wide text-sm h-12" size="default">
+          <Plus className="h-5 w-5" />
           Crear Partido
         </Button>
 
-        <nav className="flex flex-col gap-1 flex-1">
+        <nav className="flex flex-col gap-1.5 flex-1">
           {navItems.map(({ path, icon: Icon, label }) => {
             const isActive = location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-bold uppercase tracking-wide transition-all ${
                   isActive
-                    ? "bg-secondary text-foreground"
+                    ? "bg-primary/20 text-primary border border-primary/30"
                     : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                 }`}
               >
-                <Icon className="h-4.5 w-4.5" strokeWidth={isActive ? 2.2 : 1.8} />
+                <Icon className="h-5 w-5" strokeWidth={isActive ? 2.5 : 2} />
                 {label}
               </Link>
             );

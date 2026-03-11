@@ -56,9 +56,9 @@ const PlayerCard = ({ name, position, level, rating, city, available }: PlayerCa
       </div>
 
       <div className="flex flex-col items-end gap-1">
-        <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded">
-          <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-sm font-black tabular-nums text-amber-400">{rating.toFixed(1)}</span>
+        <div className="flex items-center gap-1 bg-amber-400/10 px-2 py-0.5 rounded">
+          <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+          <span className="text-sm font-black tabular-nums text-primary">{rating.toFixed(1)}</span>
         </div>
         <div className="flex items-center gap-1">
           <Zap className="h-3 w-3 text-primary" />
