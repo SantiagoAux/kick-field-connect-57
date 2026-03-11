@@ -22,7 +22,7 @@ const DesktopSidebar = () => {
           <span className="font-black text-xl tracking-tight italic">BarrioFútbol</span>
         </div>
 
-        <Button className="mb-6 gap-2" size="default">
+        <Button className="mb-6 gap-2 font-bold uppercase tracking-wide text-sm" size="default">
           <Plus className="h-4 w-4" />
           Crear Partido
         </Button>
