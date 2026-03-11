@@ -1,13 +1,14 @@
-import { Star, MapPin, Calendar, Shield, Users, Edit } from "lucide-react";
+import { Star, MapPin, Calendar, Shield, Users, Edit, Zap, Trophy, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 
 const stats = [
-  { label: "Partidos", value: "47" },
-  { label: "Goles", value: "23" },
-  { label: "Asistencias", value: "15" },
-  { label: "Rating", value: "4.3" },
+  { label: "Partidos", value: "47", icon: Trophy },
+  { label: "Goles", value: "23", icon: Zap },
+  { label: "Asistencias", value: "15", icon: TrendingUp },
+  { label: "Rating", value: "4.3", icon: Star },
 ];
 
 const ratings = [
@@ -21,114 +22,131 @@ const ProfilePage = () => {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="flex items-start gap-4">
-        <Avatar className="h-20 w-20">
-          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">JP</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">Juan Pérez</h1>
-              <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="text-sm">Santiago Centro</span>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/20 p-6"
+      >
+        <div className="flex items-start gap-4 relative z-10">
+          <Avatar className="h-24 w-24 rounded-xl border-4 border-primary/30 shadow-xl shadow-primary/20">
+            <AvatarFallback className="rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 text-primary font-black text-3xl">JP</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-black italic tracking-tight uppercase">Juan Pérez</h1>
+                <div className="flex items-center gap-1.5 mt-1 text-primary">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm font-bold">Santiago Centro</span>
+                </div>
               </div>
+              <Button variant="outline" size="sm" className="gap-1.5 border-primary/40 hover:bg-primary/10">
+                <Edit className="h-3.5 w-3.5" />
+                Editar
+              </Button>
             </div>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Edit className="h-3.5 w-3.5" />
-              Editar
-            </Button>
           </div>
         </div>
-      </div>
+        
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mt-4 relative z-10">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Mediocampista</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-md bg-secondary/80 text-foreground border border-border">Pie derecho</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-md bg-primary/20 text-primary border border-primary/30">Nivel 4</span>
+        </div>
+      </motion.div>
 
-      {/* Tags */}
-      <div className="flex flex-wrap gap-2">
-        <span className="text-label bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full">Mediocampista</span>
-        <span className="text-label bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Pie derecho</span>
-        <span className="text-label bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">Nivel 4</span>
-      </div>
-
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-muted-foreground px-1">
         Mediocampista creativo con buena visión de juego. Prefiero jugar por la banda derecha. Disponible fines de semana y miércoles.
       </p>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-3">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-4 gap-2">
         {stats.map((stat) => (
-          <div key={stat.label} className="text-center rounded-xl bg-secondary p-3">
-            <p className="text-lg font-semibold tabular-nums">{stat.value}</p>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mt-0.5">{stat.label}</p>
-          </div>
+          <motion.div 
+            key={stat.label}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center rounded-xl bg-card card-shadow p-3 border border-border/50"
+          >
+            <stat.icon className="h-4 w-4 mx-auto text-primary mb-1" />
+            <p className="text-xl font-black tabular-nums text-primary">{stat.value}</p>
+            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{stat.label}</p>
+          </motion.div>
         ))}
       </div>
 
-      <Separator />
+      <Separator className="bg-border/50" />
 
       {/* Ratings */}
       <section>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Star className="h-4 w-4 text-primary" />
+        <h2 className="text-base font-black uppercase tracking-wide mb-4 flex items-center gap-2 gradient-text">
+          <Star className="h-5 w-5 text-primary" />
           Calificaciones
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-3 bg-card rounded-xl p-4 card-shadow border border-border/50">
           {ratings.map((r) => (
             <div key={r.label} className="flex items-center justify-between">
-              <span className="text-sm">{r.label}</span>
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-2 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${(r.value / 5) * 100}%` }}
+              <span className="text-sm font-medium">{r.label}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-28 h-2 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(r.value / 5) * 100}%` }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60"
                   />
                 </div>
-                <span className="text-sm font-medium tabular-nums w-8 text-right">{r.value}</span>
+                <span className="text-sm font-black tabular-nums text-primary w-8 text-right">{r.value}</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <Separator />
+      <Separator className="bg-border/50" />
 
       {/* Teams */}
       <section>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
+        <h2 className="text-base font-black uppercase tracking-wide mb-4 flex items-center gap-2 gradient-text">
+          <Shield className="h-5 w-5 text-primary" />
           Mis Equipos
         </h2>
         <div className="space-y-2">
           {["Los Cracks FC", "Real Vecinos"].map((team) => (
-            <div key={team} className="flex items-center gap-3 p-3 rounded-xl bg-secondary">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="h-4 w-4 text-primary" />
+            <div key={team} className="flex items-center gap-3 p-4 rounded-xl bg-card card-shadow border-l-4 border-l-primary border border-border/50">
+              <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
+                <Shield className="h-5 w-5 text-primary" />
               </div>
-              <span className="text-sm font-medium">{team}</span>
+              <span className="text-sm font-black uppercase tracking-wide">{team}</span>
+              <Users className="h-4 w-4 text-muted-foreground ml-auto" />
             </div>
           ))}
         </div>
       </section>
 
-      <Separator />
+      <Separator className="bg-border/50" />
 
       {/* Match History */}
       <section>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-primary" />
+        <h2 className="text-base font-black uppercase tracking-wide mb-4 flex items-center gap-2 gradient-text">
+          <Calendar className="h-5 w-5 text-primary" />
           Últimos Partidos
         </h2>
         <div className="space-y-2">
           {[
-            { date: "Lun 10 Mar", teams: "Los Cracks vs Real Vecinos", result: "3-2" },
-            { date: "Sáb 8 Mar", teams: "Barrio FC vs Los Cracks", result: "1-1" },
-            { date: "Mié 5 Mar", teams: "Los Cracks vs Deportivo Sur", result: "4-0" },
+            { date: "Lun 10 Mar", teams: "Los Cracks vs Real Vecinos", result: "3-2", won: true },
+            { date: "Sáb 8 Mar", teams: "Barrio FC vs Los Cracks", result: "1-1", won: false },
+            { date: "Mié 5 Mar", teams: "Los Cracks vs Deportivo Sur", result: "4-0", won: true },
           ].map((match, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-secondary">
+            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-card card-shadow border border-border/50">
               <div>
-                <p className="text-sm font-medium">{match.teams}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{match.date}</p>
+                <p className="text-sm font-bold">{match.teams}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 font-medium">{match.date}</p>
               </div>
-              <span className="text-sm font-semibold tabular-nums">{match.result}</span>
+              <span className={`text-lg font-black tabular-nums ${match.won ? 'text-primary' : 'text-muted-foreground'}`}>
+                {match.result}
+              </span>
             </div>
           ))}
         </div>
