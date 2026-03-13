@@ -1,0 +1,138 @@
+{
+  "profiles": [
+    {
+      "id": "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+      "name": "Santiago Aux",
+      "email": "admin@barriofutbol.com",
+      "password": "71785946",
+      "location": "Pasto, Nariño, Colombia",
+      "position": "Mediocampista",
+      "foot": "Derecho",
+      "role": "user",
+      "stats": {
+        "matches": 2,
+        "goals": 2,
+        "assists": 1,
+        "rating": 3.5
+      }
+    },
+    {
+      "id": "be5bb878-e65f-4621-97d1-4e7e9827bf97",
+      "name": "Felipe Portilla",
+      "email": "fportilla@barriofutbol.com",
+      "password": "portilla123",
+      "location": "Cali, Colombia",
+      "position": "Mediocampista",
+      "foot": "Izquierdo",
+      "role": "user",
+      "stats": {
+        "matches": 0,
+        "goals": 0,
+        "assists": 0,
+        "rating": 5
+      }
+    },
+    {
+      "id": "26375b37-f101-4fbd-84ae-7309654ccfe4",
+      "name": "Luis Miguel Palacios",
+      "email": "luismi@barriofutbol.com",
+      "password": "palacios123",
+      "location": "Pasto, Nariño, Colombia",
+      "position": "Mediocampista",
+      "foot": "Derecho",
+      "role": "user",
+      "stats": {
+        "matches": 2,
+        "goals": 3,
+        "assists": 1,
+        "rating": 4
+      }
+    }
+  ],
+  "matches": [
+    {
+      "id": "1590d5ef-e363-421c-81cc-eb8c85b4e484",
+      "venue": "Monumental",
+      "time": "20:00",
+      "date": "2026-03-13",
+      "type": "Fútbol 5",
+      "playersNeeded": 10,
+      "price": "$25.000",
+      "teamAName": "JogoBonito",
+      "teamBName": "Los Calis",
+      "confirmedPlayerIds": [
+        "26375b37-f101-4fbd-84ae-7309654ccfe4"
+      ],
+      "creatorId": "26375b37-f101-4fbd-84ae-7309654ccfe4",
+      "status": "scheduled"
+    }
+  ],
+  "teams": [
+    {
+      "id": "bf3e3f8e-f82e-45f0-b173-695f9cfc31eb",
+      "name": "JogoBonito",
+      "city": "Pasto",
+      "playerCount": 2,
+      "captain": "Santiago Aux",
+      "creatorId": "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+      "members": [
+        "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+        "26375b37-f101-4fbd-84ae-7309654ccfe4"
+      ]
+    },
+    {
+      "id": "59f5728d-6c35-4351-acb1-1c7800b19661",
+      "name": "Los Calis",
+      "city": "Cali",
+      "playerCount": 2,
+      "captain": "Felipe Portilla",
+      "creatorId": "be5bb878-e65f-4621-97d1-4e7e9827bf97",
+      "members": [
+        "be5bb878-e65f-4621-97d1-4e7e9827bf97",
+        "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8"
+      ]
+    }
+  ],
+  "notifications": [
+    {
+      "id": "50933d69-6669-4f97-a375-584a561ee9ed",
+      "type": "team_invite",
+      "fromId": "be5bb878-e65f-4621-97d1-4e7e9827bf97",
+      "fromName": "Felipe Portilla",
+      "toId": "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+      "data": {
+        "teamId": "59f5728d-6c35-4351-acb1-1c7800b19661",
+        "message": "Te invito a unirte a mi equipo: Los Calis"
+      },
+      "timestamp": "2026-03-13T16:49:53.381Z",
+      "status": "accepted"
+    },
+    {
+      "id": "7a2a62c2-2ff5-414b-a349-3766e4c35c27",
+      "type": "team_invite",
+      "fromId": "be5bb878-e65f-4621-97d1-4e7e9827bf97",
+      "fromName": "Felipe Portilla",
+      "toId": "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+      "data": {
+        "teamId": "59f5728d-6c35-4351-acb1-1c7800b19661",
+        "message": "Te invito a unirte a mi equipo: Los Calis"
+      },
+      "timestamp": "2026-03-13T16:52:57.661Z",
+      "status": "rejected"
+    },
+    {
+      "id": "4347d734-c18d-410c-a34d-63a411c62590",
+      "type": "team_invite",
+      "fromId": "7e7d04bd-9cfb-4ce7-b8bb-14a759241ab8",
+      "fromName": "Santiago Aux",
+      "toId": "26375b37-f101-4fbd-84ae-7309654ccfe4",
+      "data": {
+        "teamId": "bf3e3f8e-f82e-45f0-b173-695f9cfc31eb",
+        "message": "Te invito a unirte a mi equipo: JogoBonito"
+      },
+      "timestamp": "2026-03-13T20:54:21.257Z",
+      "status": "accepted"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

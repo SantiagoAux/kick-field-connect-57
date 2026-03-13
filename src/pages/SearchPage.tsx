@@ -1,35 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search as SearchIcon, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PlayerCard from "@/components/PlayerCard";
-import CourtCard from "@/components/CourtCard";
 import TeamCard from "@/components/TeamCard";
 import { motion } from "framer-motion";
-
-const players = [
-  { name: "Carlos Méndez", position: "Delantero", level: 4, rating: 4.3, city: "Santiago Centro", available: true },
-  { name: "Andrés Rojas", position: "Mediocampista", level: 3, rating: 3.8, city: "Ñuñoa", available: true },
-  { name: "Felipe Torres", position: "Defensa", level: 5, rating: 4.7, city: "Providencia", available: false },
-  { name: "Miguel Soto", position: "Portero", level: 4, rating: 4.1, city: "Las Condes", available: true },
-  { name: "Rodrigo Vega", position: "Mediocampista", level: 3, rating: 3.5, city: "Maipú", available: true },
-  { name: "Sebastián Díaz", position: "Delantero", level: 5, rating: 4.9, city: "Santiago Centro", available: false },
-];
-
-const courts = [
-  { name: "Cancha El Pibe", address: "Av. Grecia 1234", type: "Fútbol 5", price: "$25.000/hr", nextAvailable: "Hoy 21:00" },
-  { name: "Complejo La 10", address: "Los Leones 567", type: "Fútbol 7", price: "$35.000/hr", nextAvailable: "Mañana 18:00" },
-  { name: "Arena Gol", address: "Irarrázaval 890", type: "Fútbol 11", price: "$50.000/hr", nextAvailable: "Sáb 10:00" },
-  { name: "Centro Deportivo Norte", address: "Av. Independencia 2345", type: "Fútbol 5", price: "$20.000/hr", nextAvailable: "Hoy 22:00" },
-];
-
-const teams = [
-  { name: "Los Cracks FC", city: "Santiago", playerCount: 15, captain: "Juan Pérez" },
-  { name: "Barrio FC", city: "Ñuñoa", playerCount: 12, captain: "Diego Muñoz" },
-  { name: "Real Vecinos", city: "Providencia", playerCount: 18, captain: "Pablo Silva" },
-  { name: "Deportivo Sur", city: "San Miguel", playerCount: 14, captain: "Mario López" },
-];
+import { getProfiles, getTeams, Profile, Team } from "@/lib/storage";
 
 const stagger = {
   hidden: {},
@@ -38,12 +15,37 @@ const stagger = {
 
 const SearchPage = () => {
   const [query, setQuery] = useState("");
+  const [players, setPlayers] = useState<Profile[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [p, t] = await Promise.all([
+        getProfiles(),
+        getTeams()
+      ]);
+      setPlayers(p);
+      setTeams(t);
+    };
+    fetchData();
+  }, []);
+
+  const filteredPlayers = players.filter(p =>
+    p.name.toLowerCase().includes(query.toLowerCase()) ||
+    p.position.toLowerCase().includes(query.toLowerCase()) ||
+    p.location.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const filteredTeams = teams.filter(t =>
+    t.name.toLowerCase().includes(query.toLowerCase()) ||
+    t.city.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Buscar</h1>
-        <p className="text-sm text-muted-foreground mt-1">Jugadores, equipos y canchas</p>
+        <h1 className="text-2xl font-semibold tracking-tight uppercase italic font-black">Buscar</h1>
+        <p className="text-sm text-muted-foreground mt-1">Encuentra jugadores y equipos reales en tu zona.</p>
       </div>
 
       <div className="flex gap-2">
@@ -69,26 +71,46 @@ const SearchPage = () => {
         </TabsList>
 
         <TabsContent value="jugadores" className="mt-4">
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-            {players.map((p, i) => (
-              <PlayerCard key={i} {...p} />
-            ))}
-          </motion.div>
+          {filteredPlayers.length > 0 ? (
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+              {filteredPlayers.map((p) => (
+                <PlayerCard
+                  key={p.id}
+                  id={p.id}
+                  name={p.name}
+                  position={p.position}
+                  level={p.stats.matches > 10 ? 2 : 1}
+                  rating={p.stats.rating}
+                  city={p.location}
+                  available={true}
+                />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">
+              <p>No se encontraron jugadores.</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="equipos" className="mt-4">
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-            {teams.map((t, i) => (
-              <TeamCard key={i} {...t} />
-            ))}
-          </motion.div>
+          {filteredTeams.length > 0 ? (
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+              {filteredTeams.map((t) => (
+                <TeamCard key={t.id} {...t} />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">
+              <p>No hay equipos registrados aún.</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="canchas" className="mt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {courts.map((c, i) => (
-              <CourtCard key={i} {...c} />
-            ))}
+          <div className="text-center py-12 px-6 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/5">
+            <h3 className="text-lg font-black text-primary uppercase mb-2">Próximamente</h3>
+            <p className="text-sm text-muted-foreground">Estamos verificando las mejores canchas de Pasto para que puedas reservar directamente.</p>
           </div>
         </TabsContent>
       </Tabs>

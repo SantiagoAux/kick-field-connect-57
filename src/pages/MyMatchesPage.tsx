@@ -1,16 +1,8 @@
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MatchCard from "@/components/MatchCard";
 import { motion } from "framer-motion";
-
-const upcoming = [
-  { date: "Hoy", time: "20:00", venue: "Cancha El Pibe", type: "Fútbol 5", playersConfirmed: 8, playersNeeded: 10, teamA: "Los Cracks", teamB: "Barrio FC", price: "$25.000" },
-  { date: "Mañana", time: "19:00", venue: "Complejo La 10", type: "Fútbol 7", playersConfirmed: 12, playersNeeded: 14, teamA: "Real Vecinos", teamB: "Deportivo Sur", price: "$30.000" },
-];
-
-const past = [
-  { date: "Lun 10", time: "21:00", venue: "Arena Gol", type: "Fútbol 5", playersConfirmed: 10, playersNeeded: 10, teamA: "Los Cracks", teamB: "Real Vecinos", price: "$25.000" },
-  { date: "Sáb 8", time: "17:00", venue: "Cancha El Pibe", type: "Fútbol 7", playersConfirmed: 14, playersNeeded: 14, teamA: "Barrio FC", teamB: "Deportivo Sur", price: "$30.000" },
-];
+import { getMatches, getCurrentUser, Match } from "@/lib/storage";
 
 const stagger = {
   hidden: {},
@@ -18,11 +10,29 @@ const stagger = {
 };
 
 const MyMatchesPage = () => {
+  const [myMatches, setMyMatches] = useState<Match[]>([]);
+  const user = getCurrentUser();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user) {
+        const allMatches = await getMatches();
+        const filtered = allMatches.filter(m => m.confirmedPlayerIds.includes(user.id));
+        setMyMatches(filtered);
+      }
+    };
+    fetchData();
+  }, [user?.id]);
+
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = myMatches.filter(m => m.date >= today);
+  const past = myMatches.filter(m => m.date < today);
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Mis Partidos</h1>
-        <p className="text-sm text-muted-foreground mt-1">Partidos confirmados y pasados</p>
+        <h1 className="text-2xl font-black italic tracking-tight uppercase">Mis Partidos</h1>
+        <p className="text-sm text-muted-foreground mt-1">Sigue el ritmo de tu agenda deportiva.</p>
       </div>
 
       <Tabs defaultValue="proximos" className="w-full">
@@ -32,19 +42,47 @@ const MyMatchesPage = () => {
         </TabsList>
 
         <TabsContent value="proximos" className="mt-4">
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-            {upcoming.map((m, i) => (
-              <MatchCard key={i} {...m} />
-            ))}
-          </motion.div>
+          {upcoming.length > 0 ? (
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+              {upcoming.map((m) => (
+                <MatchCard
+                  key={m.id}
+                  {...m}
+                  date={m.date}
+                  confirmedPlayerIds={m.confirmedPlayerIds}
+                  playersNeeded={m.playersNeeded}
+                  teamAName={m.teamAName}
+                  teamBName={m.teamBName}
+                />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground bg-secondary/20 rounded-xl border-2 border-dashed border-border">
+              <p className="font-bold uppercase text-xs">No tienes partidos programados.</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="pasados" className="mt-4">
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-            {past.map((m, i) => (
-              <MatchCard key={i} {...m} />
-            ))}
-          </motion.div>
+          {past.length > 0 ? (
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+              {past.map((m) => (
+                <MatchCard
+                  key={m.id}
+                  {...m}
+                  date={m.date}
+                  confirmedPlayerIds={m.confirmedPlayerIds}
+                  playersNeeded={m.playersNeeded}
+                  teamAName={m.teamAName}
+                  teamBName={m.teamBName}
+                />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground bg-secondary/20 rounded-xl border-2 border-dashed border-border">
+              <p className="font-bold uppercase text-xs">No hay partidos en tu historial.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
