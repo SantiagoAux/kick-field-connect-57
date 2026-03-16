@@ -66,33 +66,33 @@ const Register = () => {
                                 <Label htmlFor="name">Nombre Completo</Label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-3 h-4 w-4 text-green-600" />
-                                    <Input id="name" placeholder="Tu Nombre" className="pl-10" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                                    <Input id="name" placeholder="Tu Nombre" className="pl-10 text-green-950 bg-white/50 focus:bg-white border-green-100" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Correo Electrónico</Label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-3 h-4 w-4 text-green-600" />
-                                    <Input id="email" type="email" placeholder="tu@correo.com" className="pl-10" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                                    <Input id="email" type="email" placeholder="tu@correo.com" className="pl-10 text-green-950 bg-white/50 focus:bg-white border-green-100" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="password">Contraseña</Label>
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-3 h-4 w-4 text-green-600" />
-                                    <Input id="password" type="password" className="pl-10" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
+                                    <Input id="password" type="password" className="pl-10 text-green-950 bg-white/50 focus:bg-white border-green-100" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="location">Ubicación</Label>
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-green-600" />
-                                    <Input id="location" className="pl-10" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required />
+                                    <Input id="location" className="pl-10 text-green-950 bg-white/50 focus:bg-white border-green-100" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="position">Posición</Label>
-                                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-green-500" value={formData.position} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
+                                <select className="flex h-10 w-full rounded-md border border-green-100 bg-white/50 px-3 py-2 text-sm text-green-950 focus:bg-white focus:ring-2 focus:ring-green-500" value={formData.position} onChange={(e) => setFormData({ ...formData, position: e.target.value })}>
                                     <option>Portero</option>
                                     <option>Defensa</option>
                                     <option>Mediocampista</option>
@@ -101,7 +101,7 @@ const Register = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="foot">Pie Hábil</Label>
-                                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-green-500" value={formData.foot} onChange={(e) => setFormData({ ...formData, foot: e.target.value })}>
+                                <select className="flex h-10 w-full rounded-md border border-green-100 bg-white/50 px-3 py-2 text-sm text-green-950 focus:bg-white focus:ring-2 focus:ring-green-500" value={formData.foot} onChange={(e) => setFormData({ ...formData, foot: e.target.value })}>
                                     <option>Derecho</option>
                                     <option>Izquierdo</option>
                                     <option>Ambidiestro</option>

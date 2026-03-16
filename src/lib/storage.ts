@@ -1,7 +1,9 @@
 /**
  * Storage Management for BarrioFútbol
- * Using json-server as a local database
+ * Using Supabase as a cloud database
  */
+
+import { supabase } from './supabase';
 
 export interface Profile {
     id: string;
@@ -63,8 +65,6 @@ export interface Notification {
     timestamp: string;
 }
 
-const BASE_URL = 'http://localhost:3001';
-
 const STORAGE_KEYS = {
     AUTH: 'bf_current_user',
 };
@@ -80,9 +80,10 @@ export const generateId = () => {
 // --- Profiles ---
 export const getProfiles = async (): Promise<Profile[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/profiles`);
-        const profiles = await response.json();
-        return profiles.map((p: any) => ({
+        const { data, error } = await supabase.from('profiles').select('*');
+        if (error) throw error;
+
+        return (data || []).map((p: any) => ({
             ...p,
             stats: p.stats || { matches: 0, goals: 0, assists: 0, rating: 5.0 }
         }));
@@ -94,10 +95,16 @@ export const getProfiles = async (): Promise<Profile[]> => {
 
 export const getProfileById = async (id: string): Promise<Profile | null> => {
     try {
-        const response = await fetch(`${BASE_URL}/profiles/${id}`);
-        if (!response.ok) return null;
-        const profile = await response.json();
-        profile.stats = profile.stats || { matches: 0, goals: 0, assists: 0, rating: 5.0 };
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+        if (error) {
+            if (error.code === 'PGRST116') return null; // PostgREST error code for not found
+            throw error;
+        }
+
+        const profile = data;
+        if (profile) {
+            profile.stats = profile.stats || { matches: 0, goals: 0, assists: 0, rating: 5.0 };
+        }
         return profile;
     } catch (error) {
         return null;
@@ -106,29 +113,15 @@ export const getProfileById = async (id: string): Promise<Profile | null> => {
 
 export const saveProfile = async (profile: Profile) => {
     try {
-        const profiles = await getProfiles();
-        const existing = profiles.find(p => p.id === profile.id || p.email === profile.email);
-
         const profileToSave = {
             ...profile,
             stats: profile.stats || { matches: 0, goals: 0, assists: 0, rating: 5.0 }
         };
 
-        let response;
-        if (existing) {
-            response = await fetch(`${BASE_URL}/profiles/${existing.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileToSave)
-            });
-        } else {
-            response = await fetch(`${BASE_URL}/profiles`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(profileToSave)
-            });
-        }
-        return response.ok;
+        const { error } = await supabase.from('profiles').upsert(profileToSave, { onConflict: 'id' });
+
+        if (error) throw error;
+        return true;
     } catch (error) {
         console.error("Error saving profile:", error);
         return false;
@@ -137,24 +130,20 @@ export const saveProfile = async (profile: Profile) => {
 
 export const updateProfile = async (id: string, data: Partial<Profile>) => {
     try {
-        const profile = await getProfileById(id);
-        if (profile) {
-            const updatedProfile = { ...profile, ...data };
-            await fetch(`${BASE_URL}/profiles/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+        const { error } = await supabase.from('profiles').update(data).eq('id', id);
+        if (error) throw error;
 
-            // Update local session if it's the current user
-            const currentUser = getCurrentUser();
-            if (currentUser && currentUser.id === id) {
+        // Update local session if it's the current user
+        const currentUser = getCurrentUser();
+        if (currentUser && currentUser.id === id) {
+            const updatedProfile = await getProfileById(id);
+            if (updatedProfile) {
                 setCurrentUser(updatedProfile);
             }
-            return true;
         }
-        return false;
+        return true;
     } catch (error) {
+        console.error("Error updating profile:", error);
         return false;
     }
 };
@@ -183,13 +172,15 @@ export const getCurrentUser = (): Profile | null => {
 // --- Matches ---
 export const getMatches = async (): Promise<Match[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/matches`);
-        const matches = await response.json();
-        return matches.map((m: any) => ({
+        const { data, error } = await supabase.from('matches').select('*');
+        if (error) throw error;
+
+        return (data || []).map((m: any) => ({
             ...m,
             confirmedPlayerIds: m.confirmedPlayerIds || []
         }));
     } catch (error) {
+        console.error("Error fetching matches:", error);
         return [];
     }
 };
@@ -198,14 +189,14 @@ export const saveMatch = async (match: Match) => {
     try {
         const matchToSave = {
             ...match,
-            status: match.status || 'scheduled'
+            status: match.status || 'scheduled',
+            confirmedPlayerIds: match.confirmedPlayerIds || []
         };
-        const response = await fetch(`${BASE_URL}/matches`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(matchToSave)
-        });
-        return response.ok;
+
+        const { error } = await supabase.from('matches').upsert(matchToSave, { onConflict: 'id' });
+        if (error) throw error;
+
+        return true;
     } catch (error) {
         console.error("Error saving match:", error);
         return false;
@@ -214,9 +205,8 @@ export const saveMatch = async (match: Match) => {
 
 export const deleteMatch = async (matchId: string) => {
     try {
-        await fetch(`${BASE_URL}/matches/${matchId}`, {
-            method: 'DELETE'
-        });
+        const { error } = await supabase.from('matches').delete().eq('id', matchId);
+        if (error) throw error;
     } catch (error) {
         console.error("Error deleting match:", error);
     }
@@ -224,16 +214,16 @@ export const deleteMatch = async (matchId: string) => {
 
 export const joinMatch = async (matchId: string, userId: string) => {
     try {
-        const response = await fetch(`${BASE_URL}/matches/${matchId}`);
-        const match = await response.json();
+        const { data: match, error: fetchError } = await supabase.from('matches').select('confirmedPlayerIds').eq('id', matchId).single();
+        if (fetchError) throw fetchError;
 
-        if (!match.confirmedPlayerIds.includes(userId)) {
-            match.confirmedPlayerIds.push(userId);
-            await fetch(`${BASE_URL}/matches/${matchId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ confirmedPlayerIds: match.confirmedPlayerIds })
-            });
+        const currentPlayers = match?.confirmedPlayerIds || [];
+
+        if (!currentPlayers.includes(userId)) {
+            const newPlayers = [...currentPlayers, userId];
+
+            const { error: updateError } = await supabase.from('matches').update({ confirmedPlayerIds: newPlayers }).eq('id', matchId);
+            if (updateError) throw updateError;
 
             // Update user stats
             const profile = await getProfileById(userId);
@@ -251,17 +241,18 @@ export const joinMatch = async (matchId: string, userId: string) => {
 
 export const leaveMatch = async (matchId: string, userId: string) => {
     try {
-        const response = await fetch(`${BASE_URL}/matches/${matchId}`);
-        const match = await response.json();
+        const { data: match, error: fetchError } = await supabase.from('matches').select('confirmedPlayerIds').eq('id', matchId).single();
+        if (fetchError) throw fetchError;
 
-        const index = match.confirmedPlayerIds.indexOf(userId);
+        const currentPlayers = match?.confirmedPlayerIds || [];
+        const index = currentPlayers.indexOf(userId);
+
         if (index >= 0) {
-            match.confirmedPlayerIds.splice(index, 1);
-            await fetch(`${BASE_URL}/matches/${matchId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ confirmedPlayerIds: match.confirmedPlayerIds })
-            });
+            const newPlayers = [...currentPlayers];
+            newPlayers.splice(index, 1);
+
+            const { error: updateError } = await supabase.from('matches').update({ confirmedPlayerIds: newPlayers }).eq('id', matchId);
+            if (updateError) throw updateError;
 
             // Update user stats
             const profile = await getProfileById(userId);
@@ -284,25 +275,30 @@ export const removePlayerFromMatch = async (matchId: string, userId: string) => 
 // --- Teams ---
 export const getTeams = async (): Promise<Team[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/teams`);
-        const teams = await response.json();
-        return teams.map((t: any) => ({
+        const { data, error } = await supabase.from('teams').select('*');
+        if (error) throw error;
+
+        return (data || []).map((t: any) => ({
             ...t,
             members: t.members || [t.creatorId]
         }));
     } catch (error) {
+        console.error("Error fetching teams:", error);
         return [];
     }
 };
 
 export const saveTeam = async (team: Team) => {
     try {
-        const response = await fetch(`${BASE_URL}/teams`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...team, members: [team.creatorId] })
-        });
-        return response.ok;
+        const teamToSave = {
+            ...team,
+            members: team.members || [team.creatorId]
+        };
+
+        const { error } = await supabase.from('teams').upsert(teamToSave, { onConflict: 'id' });
+        if (error) throw error;
+
+        return true;
     } catch (error) {
         console.error("Error saving team:", error);
         return false;
@@ -311,12 +307,10 @@ export const saveTeam = async (team: Team) => {
 
 export const updateTeam = async (teamId: string, data: Partial<Team>) => {
     try {
-        const response = await fetch(`${BASE_URL}/teams/${teamId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-        return response.ok;
+        const { error } = await supabase.from('teams').update(data).eq('id', teamId);
+        if (error) throw error;
+
+        return true;
     } catch (error) {
         console.error("Error updating team:", error);
         return false;
@@ -330,10 +324,15 @@ export const updateTeamMembers = async (teamId: string, memberIds: string[]) => 
 // --- Notifications ---
 export const getNotifications = async (userId: string): Promise<Notification[]> => {
     try {
-        const response = await fetch(`${BASE_URL}/notifications?toId=${userId}`);
-        const notifications = await response.json();
-        return notifications.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        const { data, error } = await supabase.from('notifications')
+            .select('*')
+            .eq('toId', userId)
+            .order('timestamp', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
     } catch (error) {
+        console.error("Error fetching notifications:", error);
         return [];
     }
 };
@@ -346,11 +345,10 @@ export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' |
             timestamp: new Date().toISOString(),
             status: 'unread'
         };
-        await fetch(`${BASE_URL}/notifications`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newNote)
-        });
+
+        const { error } = await supabase.from('notifications').insert(newNote);
+        if (error) throw error;
+
         return newNote;
     } catch (error) {
         console.error("Error adding notification:", error);
@@ -360,13 +358,12 @@ export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' |
 
 export const updateNotificationStatus = async (id: string, status: Notification['status']) => {
     try {
-        await fetch(`${BASE_URL}/notifications/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status })
-        });
+        const { error } = await supabase.from('notifications').update({ status }).eq('id', id);
+        if (error) throw error;
+
         return true;
     } catch (error) {
+        console.error("Error updating notification status:", error);
         return false;
     }
 };
@@ -382,11 +379,8 @@ export interface PlayerMatchStats {
 export const completeMatch = async (matchId: string, stats: PlayerMatchStats[]) => {
     try {
         // 1. Update Match Status
-        await fetch(`${BASE_URL}/matches/${matchId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'finished' })
-        });
+        const { error: matchError } = await supabase.from('matches').update({ status: 'finished' }).eq('id', matchId);
+        if (matchError) throw matchError;
 
         // 2. Update each player's profile
         for (const pStat of stats) {
@@ -416,6 +410,5 @@ export const completeMatch = async (matchId: string, stats: PlayerMatchStats[]) 
 
 // --- Initial Data Setup ---
 export const initializeData = () => {
-    // With json-server, we don't need manual initialization here
-    // as it's handled by the db.json file
+    // Database initialization is handled directly via Supabase SQL
 };
