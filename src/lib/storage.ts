@@ -424,22 +424,20 @@ export const getNotifications = async (userId: string): Promise<Notification[]> 
 
 export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' | 'status'>) => {
     try {
-        const newNote: any = {
+        const newNote: Notification = {
             ...n,
             id: generateId(),
             timestamp: new Date().toISOString(),
             status: 'unread',
-            // Map to both for compatibility
-            from_id: n.fromId,
-            from_name: n.fromName,
-            to_id: n.toId,
         };
 
-        console.log("Intentando enviar notificación:", newNote);
-
+        // We use camelCase (fromId, toId) as the primary way since that's what's in the user's schema
         const { error } = await supabase.from('notifications').insert(newNote);
+        
         if (error) {
             console.error("Error de Supabase al insertar notificación:", error);
+            // If primary insert fails, we could try a mapping here, but the user's error 
+            // specifically said from_id doesn't exist, so we stick to fromId.
             throw error;
         }
 
