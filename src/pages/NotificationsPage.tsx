@@ -41,6 +41,11 @@ const NotificationsPage = () => {
             if (success) {
                 toast({ title: "Invitación aceptada", description: "Te has unido al partido." });
             }
+        } else if (n.type === 'match_join_request' && n.data.matchId) {
+            const success = await joinMatch(n.data.matchId, n.fromId, n.data.team);
+            if (success) {
+                toast({ title: "Solicitud aceptada", description: `${n.fromName} ahora es parte del partido.` });
+            }
         }
         await updateNotificationStatus(n.id, 'accepted');
         setNotifications(notifications.map(item => item.id === n.id ? { ...item, status: 'accepted' as const } : item));
@@ -62,6 +67,7 @@ const NotificationsPage = () => {
             case 'team_invite': return <Shield className="h-5 w-5 text-primary" />;
             case 'match_invite': return <Calendar className="h-5 w-5 text-emerald-500" />;
             case 'match_cancel': return <X className="h-5 w-5 text-destructive" />;
+            case 'match_join_request': return <Users className="h-5 w-5 text-amber-500" />;
             default: return <Bell className="h-5 w-5 text-blue-500" />;
         }
     };
@@ -71,6 +77,7 @@ const NotificationsPage = () => {
             case 'team_invite': return `Invitación a Equipo`;
             case 'match_invite': return `Invitación a Partido`;
             case 'match_cancel': return `Partido Cancelado`;
+            case 'match_join_request': return `Solicitud para Unirse`;
             default: return `Notificación`;
         }
     };
@@ -112,7 +119,7 @@ const NotificationsPage = () => {
 
                                         {(n.status === 'unread' || n.status === 'pending') && (
                                             <div className="flex gap-2 mt-4">
-                                                {(n.type === 'team_invite' || n.type === 'match_invite') && (
+                                                {(n.type === 'team_invite' || n.type === 'match_invite' || n.type === 'match_join_request') && (
                                                     <>
                                                         <Button size="sm" className="h-8 text-[10px] font-black uppercase" onClick={() => handleAccept(n)}>
                                                             <Check className="h-3.5 w-3.5 mr-1" /> Aceptar
@@ -122,14 +129,14 @@ const NotificationsPage = () => {
                                                         </Button>
                                                     </>
                                                 )}
-                                                {n.type !== 'team_invite' && n.type !== 'match_invite' && n.status === 'unread' && (
+                                                {n.type !== 'team_invite' && n.type !== 'match_invite' && n.type !== 'match_join_request' && n.status === 'unread' && (
                                                     <Button size="sm" variant="ghost" className="h-8 text-[10px] font-black uppercase" onClick={() => markAsRead(n.id)}>
                                                         Marcar como leída
                                                     </Button>
                                                 )}
                                             </div>
                                         )}
-                                        {(n.status === 'accepted' || n.status === 'rejected' || (n.status === 'read' && n.type !== 'team_invite' && n.type !== 'match_invite')) && (
+                                        {(n.status === 'accepted' || n.status === 'rejected' || (n.status === 'read' && n.type !== 'team_invite' && n.type !== 'match_invite' && n.type !== 'match_join_request')) && (
                                             <div className="mt-3 flex items-center gap-1.5">
                                                 <span className={`text-[9px] font-black uppercase tracking-widest ${n.status === 'accepted' ? 'text-emerald-500' : n.status === 'rejected' ? 'text-destructive' : 'text-muted-foreground'}`}>
                                                     {n.status === 'accepted' ? 'Aceptada' : n.status === 'rejected' ? 'Rechazada' : 'Leída'}

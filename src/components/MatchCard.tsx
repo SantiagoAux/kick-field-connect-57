@@ -1,7 +1,7 @@
 import { CalendarDays, MapPin, Users, Swords, CheckCircle2, Settings2, Trash2, UserMinus, XCircle, Trophy, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { getProfiles, joinMatch, getCurrentUser, deleteMatch, leaveMatch, removePlayerFromMatch, Profile } from "@/lib/storage";
+import { getProfiles, joinMatch, requestJoinMatch, getCurrentUser, deleteMatch, leaveMatch, removePlayerFromMatch, Profile } from "@/lib/storage";
 import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import {
@@ -30,6 +30,8 @@ interface MatchCardProps {
   status?: 'scheduled' | 'finished' | 'cancelled';
   teamALogoUrl?: string;
   teamBLogoUrl?: string;
+  teamAPlayerIds?: string[];
+  teamBPlayerIds?: string[];
 }
 
 const MatchCard = ({
@@ -52,6 +54,8 @@ const MatchCard = ({
   const [confirmedPlayers, setConfirmedPlayers] = useState<Profile[]>([]);
   const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [isResultOpen, setIsResultOpen] = useState(false);
+  const [isJoinRequestOpen, setIsJoinRequestOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<'A' | 'B' | null>(null);
   const { toast } = useToast();
   const user = getCurrentUser();
 
@@ -69,15 +73,22 @@ const MatchCard = ({
   const isCreator = user && user.id === creatorId;
   const isFinished = status === 'finished';
 
-  const handleJoin = async () => {
+  const handleJoinRequestClick = () => {
     if (!user) {
       toast({ title: "Acceso requerido", description: "Debes iniciar sesión para unirte." });
       return;
     }
-    const success = await joinMatch(id, user.id);
+    setIsJoinRequestOpen(true);
+  };
+
+  const submitJoinRequest = async () => {
+    if (!user || !selectedTeam) return;
+    const success = await requestJoinMatch(id, user.id, user.name, creatorId, selectedTeam);
     if (success) {
-      setPlayerIds([...playerIds, user.id]);
-      toast({ title: "¡Te has unido!", description: "Prepárate para el partido." });
+      setIsJoinRequestOpen(false);
+      toast({ title: "Solicitud enviada", description: "Espera a que el organizador acepte tu solicitud." });
+    } else {
+      toast({ variant: "destructive", title: "Error", description: "No se pudo enviar la solicitud." });
     }
   };
 
@@ -256,7 +267,7 @@ const MatchCard = ({
             ) : (
               <Button
                 size="sm"
-                onClick={handleJoin}
+                onClick={handleJoinRequestClick}
                 className="h-8 text-xs font-bold uppercase tracking-wide bg-primary hover:bg-primary/90"
               >
                 Unirse
@@ -285,6 +296,42 @@ const MatchCard = ({
         onOpenChange={setIsResultOpen}
         onSuccess={() => window.location.reload()}
       />
+
+      <Dialog open={isJoinRequestOpen} onOpenChange={setIsJoinRequestOpen}>
+        <DialogContent className="bg-white/95 backdrop-blur-md sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black italic text-primary uppercase">Elegir Equipo</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm font-medium text-muted-foreground">¿En qué equipo deseas jugar?</p>
+            <div className="flex gap-4">
+              <Button
+                variant={selectedTeam === 'A' ? 'default' : 'outline'}
+                className="flex-1 font-bold uppercase h-12"
+                onClick={() => setSelectedTeam('A')}
+              >
+                {teamAName}
+              </Button>
+              <Button
+                variant={selectedTeam === 'B' ? 'default' : 'outline'}
+                className="flex-1 font-bold uppercase h-12"
+                onClick={() => setSelectedTeam('B')}
+              >
+                {teamBName}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              className="w-full font-black uppercase tracking-widest gap-2 bg-emerald-500 hover:bg-emerald-600 text-white"
+              disabled={!selectedTeam}
+              onClick={submitJoinRequest}
+            >
+              Enviar Solicitud
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

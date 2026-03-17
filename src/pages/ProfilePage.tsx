@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
-import { getCurrentUser, setCurrentUser, getTeams, getMatches, updateProfile, Profile, Team, Match } from "@/lib/storage";
+import { getCurrentUser, setCurrentUser, getTeams, getMatches, updateProfile, getProfileById, Profile, Team, Match } from "@/lib/storage";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -20,32 +20,41 @@ import { useToast } from "@/components/ui/use-toast";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const initialUser = getCurrentUser();
+  const [user, setUser] = useState<Profile | null>(initialUser);
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [myTeams, setMyTeams] = useState<Team[]>([]);
   const [myMatches, setMyMatches] = useState<Match[]>([]);
 
   const [editData, setEditData] = useState({
-    name: user?.name || "",
-    location: user?.location || "",
-    position: user?.position || "",
-    foot: user?.foot || "",
-    password: user?.password || "",
+    name: initialUser?.name || "",
+    location: initialUser?.location || "",
+    position: initialUser?.position || "",
+    foot: initialUser?.foot || "",
+    password: initialUser?.password || "",
   });
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) return;
+      if (!initialUser) return;
+      
+      // Fetch the latest profile data to keep stats fresh
+      const freshProfile = await getProfileById(initialUser.id);
+      if (freshProfile) {
+        setUser(freshProfile);
+        setCurrentUser(freshProfile);
+      }
+
       const [teams, matches] = await Promise.all([
         getTeams(),
         getMatches()
       ]);
-      setMyTeams(teams.filter(t => t.creatorId === user.id));
-      setMyMatches(matches.filter(m => m.confirmedPlayerIds.includes(user.id)));
+      setMyTeams(teams.filter(t => t.creatorId === initialUser.id));
+      setMyMatches(matches.filter(m => m.confirmedPlayerIds.includes(initialUser.id)));
     };
     fetchData();
-  }, [user?.id]);
+  }, [initialUser?.id]);
 
   if (!user) return null;
 

@@ -30,6 +30,8 @@ export interface Match {
     type: string;
     playersNeeded: number;
     confirmedPlayerIds: string[];
+    teamAPlayerIds: string[];
+    teamBPlayerIds: string[];
     teamAName: string;
     teamBName: string;
     price: string;
@@ -52,7 +54,7 @@ export interface Team {
 
 export interface Notification {
     id: string;
-    type: 'team_invite' | 'match_invite' | 'match_cancel' | 'match_update' | 'system';
+    type: 'team_invite' | 'match_invite' | 'match_cancel' | 'match_update' | 'match_join_request' | 'system';
     fromId: string;
     fromName: string;
     toId: string;
@@ -60,6 +62,7 @@ export interface Notification {
         teamId?: string;
         matchId?: string;
         message?: string;
+        team?: 'A' | 'B';
     };
     status: 'pending' | 'accepted' | 'rejected' | 'read' | 'unread';
     timestamp: string;
@@ -190,7 +193,9 @@ export const saveMatch = async (match: Match) => {
         const matchToSave = {
             ...match,
             status: match.status || 'scheduled',
-            confirmedPlayerIds: match.confirmedPlayerIds || []
+            confirmedPlayerIds: match.confirmedPlayerIds || [],
+            teamAPlayerIds: match.teamAPlayerIds || [],
+            teamBPlayerIds: match.teamBPlayerIds || []
         };
 
         const { error } = await supabase.from('matches').upsert(matchToSave, { onConflict: 'id' });
@@ -212,17 +217,39 @@ export const deleteMatch = async (matchId: string) => {
     }
 };
 
-export const joinMatch = async (matchId: string, userId: string) => {
+export const requestJoinMatch = async (matchId: string, userId: string, userName: string, creatorId: string, team: 'A' | 'B') => {
     try {
-        const { data: match, error: fetchError } = await supabase.from('matches').select('confirmedPlayerIds').eq('id', matchId).single();
+        await addNotification({
+            type: 'match_join_request',
+            fromId: userId,
+            fromName: userName,
+            toId: creatorId,
+            data: { matchId, team, message: `quiere unirse al equipo ${team}` }
+        });
+        return true;
+    } catch (error) {
+        console.error("Error requesting to join match:", error);
+        return false;
+    }
+};
+
+export const joinMatch = async (matchId: string, userId: string, team?: 'A' | 'B') => {
+    try {
+        const { data: match, error: fetchError } = await supabase.from('matches').select('confirmedPlayerIds, teamAPlayerIds, teamBPlayerIds').eq('id', matchId).single();
         if (fetchError) throw fetchError;
 
         const currentPlayers = match?.confirmedPlayerIds || [];
+        const teamA = match?.teamAPlayerIds || [];
+        const teamB = match?.teamBPlayerIds || [];
 
         if (!currentPlayers.includes(userId)) {
             const newPlayers = [...currentPlayers, userId];
+            const updates: any = { confirmedPlayerIds: newPlayers };
+            
+            if (team === 'A' && !teamA.includes(userId)) updates.teamAPlayerIds = [...teamA, userId];
+            if (team === 'B' && !teamB.includes(userId)) updates.teamBPlayerIds = [...teamB, userId];
 
-            const { error: updateError } = await supabase.from('matches').update({ confirmedPlayerIds: newPlayers }).eq('id', matchId);
+            const { error: updateError } = await supabase.from('matches').update(updates).eq('id', matchId);
             if (updateError) throw updateError;
 
             // Update user stats
@@ -382,25 +409,31 @@ export const completeMatch = async (matchId: string, stats: PlayerMatchStats[]) 
         const { error: matchError } = await supabase.from('matches').update({ status: 'finished' }).eq('id', matchId);
         if (matchError) throw matchError;
 
-        // 2. Update each player's profile
-        for (const pStat of stats) {
-            const profile = await getProfileById(pStat.profileId);
-            if (profile) {
-                const totalMatches = profile.stats.matches + 1;
-                // Calculate new average rating
-                const currentTotalRating = profile.stats.rating * profile.stats.matches;
-                const newAverageRating = (currentTotalRating + pStat.rating) / totalMatches;
+        // 2. Fetch all profiles concurrently
+        const profiles = await Promise.all(
+            stats.map(s => getProfileById(s.profileId))
+        );
 
-                const updatedStats = {
-                    matches: totalMatches,
-                    goals: profile.stats.goals + pStat.goals,
-                    assists: profile.stats.assists + pStat.assists,
-                    rating: Number(newAverageRating.toFixed(1))
-                };
+        // 3. Calculate updates and execute them concurrently
+        const updatePromises = stats.map((pStat, index) => {
+            const profile = profiles[index];
+            if (!profile) return Promise.resolve(false);
 
-                await updateProfile(pStat.profileId, { stats: updatedStats });
-            }
-        }
+            const totalMatches = profile.stats.matches + 1;
+            const currentTotalRating = profile.stats.rating * profile.stats.matches;
+            const newAverageRating = (currentTotalRating + pStat.rating) / totalMatches;
+
+            const updatedStats = {
+                matches: totalMatches,
+                goals: profile.stats.goals + pStat.goals,
+                assists: profile.stats.assists + pStat.assists,
+                rating: Number(newAverageRating.toFixed(1))
+            };
+
+            return updateProfile(pStat.profileId, { stats: updatedStats });
+        });
+
+        await Promise.all(updatePromises);
         return true;
     } catch (error) {
         console.error("Error completing match:", error);
