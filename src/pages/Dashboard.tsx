@@ -75,6 +75,8 @@ const Dashboard = () => {
       teamALogoUrl: teamA?.logoUrl,
       teamBLogoUrl: teamB?.logoUrl,
       confirmedPlayerIds: [user.id],
+      teamAPlayerIds: [],
+      teamBPlayerIds: [],
       creatorId: user.id,
       status: 'scheduled'
     };
