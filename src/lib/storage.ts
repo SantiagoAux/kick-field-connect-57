@@ -435,8 +435,13 @@ export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' |
             to_id: n.toId,
         };
 
+        console.log("Intentando enviar notificación:", newNote);
+
         const { error } = await supabase.from('notifications').insert(newNote);
-        if (error) throw error;
+        if (error) {
+            console.error("Error de Supabase al insertar notificación:", error);
+            throw error;
+        }
 
         return newNote;
     } catch (error) {
