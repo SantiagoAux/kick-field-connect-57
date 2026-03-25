@@ -180,13 +180,7 @@ export const getMatches = async (): Promise<Match[]> => {
 
         return (data || []).map((m: any) => ({
             ...m,
-            // Map snake_case from DB to camelCase if needed
-            creatorId: m.creatorId || m.creator_id,
-            confirmedPlayerIds: m.confirmedPlayerIds || m.confirmed_player_ids || [],
-            teamAPlayerIds: m.teamAPlayerIds || m.team_a_player_ids || [],
-            teamBPlayerIds: m.teamBPlayerIds || m.team_b_player_ids || [],
-            teamALogoUrl: m.teamALogoUrl || m.team_a_logo_url,
-            teamBLogoUrl: m.teamBLogoUrl || m.team_b_logo_url,
+            confirmedPlayerIds: m.confirmedPlayerIds || []
         }));
     } catch (error) {
         console.error("Error fetching matches:", error);
@@ -196,23 +190,21 @@ export const getMatches = async (): Promise<Match[]> => {
 
 export const saveMatch = async (match: Match) => {
     try {
-        // Prepare data mapping to both camelCase and snake_case for compatibility
-        const matchToSave: any = {
+        const matchToSave = {
             ...match,
             status: match.status || 'scheduled',
             confirmedPlayerIds: match.confirmedPlayerIds || [],
-            confirmed_player_ids: match.confirmedPlayerIds || [],
             teamAPlayerIds: match.teamAPlayerIds || [],
-            team_a_player_ids: match.teamAPlayerIds || [],
-            teamBPlayerIds: match.teamBPlayerIds || [],
-            team_b_player_ids: match.teamBPlayerIds || [],
-            creator_id: match.creatorId,
-            team_a_logo_url: match.teamALogoUrl,
-            team_b_logo_url: match.teamBLogoUrl
+            teamBPlayerIds: match.teamBPlayerIds || []
         };
 
+        console.log("Intentando guardar partido:", matchToSave);
+
         const { error } = await supabase.from('matches').upsert(matchToSave, { onConflict: 'id' });
-        if (error) throw error;
+        if (error) {
+            console.error("Error de Supabase al guardar partido:", JSON.stringify(error, null, 2));
+            throw error;
+        }
 
         return true;
     } catch (error) {
@@ -259,30 +251,23 @@ export const requestJoinMatch = async (matchId: string, userId: string, userName
 export const joinMatch = async (matchId: string, userId: string, team?: 'A' | 'B') => {
     try {
         const { data: match, error: fetchError } = await supabase.from('matches')
-            .select('confirmedPlayerIds, confirmed_player_ids, teamAPlayerIds, team_a_player_ids, teamBPlayerIds, team_b_player_ids')
+            .select('confirmedPlayerIds, teamAPlayerIds, teamBPlayerIds')
             .eq('id', matchId)
             .single();
         if (fetchError) throw fetchError;
 
-        const currentPlayers = match?.confirmedPlayerIds || match?.confirmed_player_ids || [];
-        const teamA = match?.teamAPlayerIds || match?.team_a_player_ids || [];
-        const teamB = match?.teamBPlayerIds || match?.team_b_player_ids || [];
+        const currentPlayers = match?.confirmedPlayerIds || [];
+        const teamA = match?.teamAPlayerIds || [];
+        const teamB = match?.teamBPlayerIds || [];
 
         if (!currentPlayers.includes(userId)) {
             const newPlayers = [...currentPlayers, userId];
             const updates: any = { 
                 confirmedPlayerIds: newPlayers,
-                confirmed_player_ids: newPlayers
             };
             
-            if (team === 'A' && !teamA.includes(userId)) {
-                updates.teamAPlayerIds = [...teamA, userId];
-                updates.team_a_player_ids = [...teamA, userId];
-            }
-            if (team === 'B' && !teamB.includes(userId)) {
-                updates.teamBPlayerIds = [...teamB, userId];
-                updates.team_b_player_ids = [...teamB, userId];
-            }
+            if (team === 'A' && !teamA.includes(userId)) updates.teamAPlayerIds = [...teamA, userId];
+            if (team === 'B' && !teamB.includes(userId)) updates.teamBPlayerIds = [...teamB, userId];
 
             const { error: updateError } = await supabase.from('matches').update(updates).eq('id', matchId);
             if (updateError) throw updateError;
@@ -304,14 +289,14 @@ export const joinMatch = async (matchId: string, userId: string, team?: 'A' | 'B
 export const leaveMatch = async (matchId: string, userId: string) => {
     try {
         const { data: match, error: fetchError } = await supabase.from('matches')
-            .select('confirmedPlayerIds, confirmed_player_ids, teamAPlayerIds, team_a_player_ids, teamBPlayerIds, team_b_player_ids')
+            .select('confirmedPlayerIds, teamAPlayerIds, teamBPlayerIds')
             .eq('id', matchId)
             .single();
         if (fetchError) throw fetchError;
 
-        const currentPlayers = match?.confirmedPlayerIds || match?.confirmed_player_ids || [];
-        const teamA = match?.teamAPlayerIds || match?.team_a_player_ids || [];
-        const teamB = match?.teamBPlayerIds || match?.team_b_player_ids || [];
+        const currentPlayers = match?.confirmedPlayerIds || [];
+        const teamA = match?.teamAPlayerIds || [];
+        const teamB = match?.teamBPlayerIds || [];
 
         const playerIndex = currentPlayers.indexOf(userId);
 
@@ -322,11 +307,8 @@ export const leaveMatch = async (matchId: string, userId: string) => {
 
             const updates: any = { 
                 confirmedPlayerIds: newPlayers,
-                confirmed_player_ids: newPlayers,
                 teamAPlayerIds: newTeamA,
-                team_a_player_ids: newTeamA,
                 teamBPlayerIds: newTeamB,
-                team_b_player_ids: newTeamB
             };
 
             const { error: updateError } = await supabase.from('matches').update(updates).eq('id', matchId);
@@ -402,20 +384,13 @@ export const updateTeamMembers = async (teamId: string, memberIds: string[]) => 
 // --- Notifications ---
 export const getNotifications = async (userId: string): Promise<Notification[]> => {
     try {
-        // Try querying using toId or to_id
         const { data, error } = await supabase.from('notifications')
             .select('*')
-            .or(`toId.eq.${userId},to_id.eq.${userId}`)
+            .eq('toId', userId)
             .order('timestamp', { ascending: false });
 
         if (error) throw error;
-        
-        return (data || []).map((n: any) => ({
-            ...n,
-            fromId: n.fromId || n.from_id,
-            fromName: n.fromName || n.from_name,
-            toId: n.toId || n.to_id,
-        }));
+        return data || [];
     } catch (error) {
         console.error("Error fetching notifications:", error);
         return [];
