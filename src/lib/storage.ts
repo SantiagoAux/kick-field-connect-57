@@ -431,13 +431,11 @@ export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' |
             status: 'unread',
         };
 
-        // We use camelCase (fromId, toId) as the primary way since that's what's in the user's schema
+        console.log("Intentando insertar notificación con payload:", newNote);
         const { error } = await supabase.from('notifications').insert(newNote);
         
         if (error) {
-            console.error("Error de Supabase al insertar notificación:", error);
-            // If primary insert fails, we could try a mapping here, but the user's error 
-            // specifically said from_id doesn't exist, so we stick to fromId.
+            console.error("Error de Supabase al insertar notificación:", JSON.stringify(error, null, 2));
             throw error;
         }
 
