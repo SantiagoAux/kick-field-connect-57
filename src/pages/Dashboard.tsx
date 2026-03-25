@@ -63,6 +63,23 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Filter and sort matches
+  const upcomingMatches = matches
+    .filter(m => m.status !== 'finished')
+    .sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.time.localeCompare(b.time);
+    });
+
+  const pastMatches = matches
+    .filter(m => m.status === 'finished')
+    .sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      return b.time.localeCompare(a.time);
+    });
+
   const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -302,25 +319,37 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Upcoming Matches */}
-      <section>
-        <SectionHeader title="Próximos Partidos" linkTo="/mis-partidos" />
-        {matches.length > 0 ? (
-          <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
-            {matches.map((match) => (
-              <MatchCard
-                key={match.id}
-                {...match}
-              />
-            ))}
-          </motion.div>
-        ) : (
-          <div className="text-center p-8 border-2 border-dashed border-primary/20 rounded-xl bg-primary/5">
-            <p className="text-sm font-bold text-primary/60 uppercase">No hay partidos organizados aún.</p>
-            <Button variant="link" onClick={() => setIsMatchDialogOpen(true)} className="text-primary font-black mt-2">¡Sé el primero!</Button>
-          </div>
+      {/* Matches Sections */}
+      <div className="space-y-12">
+        {/* Upcoming Matches */}
+        <section>
+          <SectionHeader title="Próximos Partidos" linkTo="/mis-partidos" />
+          {upcomingMatches.length > 0 ? (
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3">
+              {upcomingMatches.map((match) => (
+                <MatchCard key={match.id} {...match} />
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center p-8 border-2 border-dashed border-primary/20 rounded-xl bg-primary/5">
+              <p className="text-sm font-bold text-primary/60 uppercase">No hay partidos próximos.</p>
+              <Button variant="link" onClick={() => setIsMatchDialogOpen(true)} className="text-primary font-black mt-2">¡Organiza uno!</Button>
+            </div>
+          )}
+        </section>
+
+        {/* Finished Matches */}
+        {pastMatches.length > 0 && (
+          <section>
+            <SectionHeader title="Resultados Recientes" linkTo="/mis-partidos" />
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-3 opacity-80">
+              {pastMatches.map((match) => (
+                <MatchCard key={match.id} {...match} />
+              ))}
+            </motion.div>
+          </section>
         )}
-      </section>
+      </div>
 
       {/* Teams */}
       <section>

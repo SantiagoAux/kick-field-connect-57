@@ -198,13 +198,8 @@ export const saveMatch = async (match: Match) => {
             teamBPlayerIds: match.teamBPlayerIds || []
         };
 
-        console.log("Intentando guardar partido:", matchToSave);
-
         const { error } = await supabase.from('matches').upsert(matchToSave, { onConflict: 'id' });
-        if (error) {
-            console.error("Error de Supabase al guardar partido:", JSON.stringify(error, null, 2));
-            throw error;
-        }
+        if (error) throw error;
 
         return true;
     } catch (error) {
@@ -406,13 +401,9 @@ export const addNotification = async (n: Omit<Notification, 'id' | 'timestamp' |
             status: 'unread',
         };
 
-        console.log("Intentando insertar notificación con payload:", newNote);
         const { error } = await supabase.from('notifications').insert(newNote);
         
-        if (error) {
-            console.error("Error de Supabase al insertar notificación:", JSON.stringify(error, null, 2));
-            throw error;
-        }
+        if (error) throw error;
 
         return newNote;
     } catch (error) {
